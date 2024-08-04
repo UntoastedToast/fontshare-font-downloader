@@ -2,6 +2,7 @@ import os
 import zipfile
 import shutil
 from playwright.sync_api import sync_playwright, TimeoutError
+from tqdm import tqdm  # Fortschrittsanzeige
 
 def download_fonts(max_fonts=None):
     """
@@ -15,7 +16,8 @@ def download_fonts(max_fonts=None):
 
     # Starte Playwright
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False, slow_mo=50)  # Sichtbarer Browser für Debugging
+        # Setze headless=True, um den Browser im Headless-Modus auszuführen
+        browser = p.chromium.launch(headless=True)  # Kein sichtbarer Browser für den produktiven Einsatz
         page = browser.new_page()
 
         # Gehe zur Fontshare-Startseite
@@ -28,6 +30,7 @@ def download_fonts(max_fonts=None):
             print("Scrolling to load all fonts...")
             seen_fonts = set()
             total_fonts = 0
+            pbar = tqdm(desc="Collecting font links", total=max_fonts or 100, unit="font", dynamic_ncols=True)
 
             while True:
                 # Sammle aktuelle Links der Kacheln
@@ -40,7 +43,7 @@ def download_fonts(max_fonts=None):
 
                 # Begrenze auf neue Links maximal 6, die pro Scrollvorgang geladen werden
                 total_fonts += len(new_fonts)
-                print(f"Collected {total_fonts} font links so far.")
+                pbar.update(len(new_fonts))
 
                 # Scrolle zur letzten Kachel, um den Ladevorgang zu erzwingen
                 if font_links:
@@ -58,6 +61,7 @@ def download_fonts(max_fonts=None):
                     print("No new fonts loaded. Breaking scroll loop.")
                     break
 
+            pbar.close()
             print("Finished scrolling. All fonts are loaded.")
             return list(seen_fonts)
 
@@ -72,17 +76,18 @@ def download_fonts(max_fonts=None):
         
         print(f"Found {len(font_urls)} font families.")
 
+        # Fortschrittsanzeige für das Herunterladen
+        pbar_download = tqdm(font_urls, desc="Downloading fonts", unit="font", dynamic_ncols=True)
+
         # Besuche jede Schriftfamilien-Seite und lade die Schriftfamilie herunter
-        for font_url in font_urls:
+        for font_url in pbar_download:
             font_page_url = f"https://www.fontshare.com{font_url}"
-            print(f"Visiting font page: {font_page_url}")
             page.goto(font_page_url)
             page.wait_for_timeout(2000)  # Warte auf das Laden der Seite
 
             # Klicke auf den "Download Family"-Button
             download_button = page.locator("text='Download Family'")
             if download_button.count() > 0:
-                print("Download button found. Attempting to download...")
                 download_button.first.click()
 
                 # Warte auf das Erscheinen des Download-Links und lade die Schrift herunter
@@ -92,12 +97,10 @@ def download_fonts(max_fonts=None):
                     download = download_info.value
                     font_name = font_url.split('/')[-1]  # Verwende den Schriftartnamen für den Dateinamen
                     download.save_as(f"fonts/{font_name}.zip")
-                    print(f"Font {font_name} downloaded successfully.")
                 except TimeoutError:
                     print(f"Failed to download font: {font_name}. Skipping.")
 
-            else:
-                print("Download button not found.")
+        pbar_download.close()
 
         # Browser schließen
         browser.close()
@@ -111,27 +114,30 @@ def extract_and_save_ttf_fonts():
     all_fonts_dir = os.path.join(fonts_dir, "all_fonts")
     os.makedirs(all_fonts_dir, exist_ok=True)
 
-    # Durchlaufe alle ZIP-Dateien im Font-Ordner
-    for font_zip in os.listdir(fonts_dir):
-        if font_zip.endswith(".zip"):
-            font_name = font_zip.split(".zip")[0]
-            font_zip_path = os.path.join(fonts_dir, font_zip)
-            font_extracted_path = os.path.join(fonts_dir, font_name)
+    font_zip_files = [f for f in os.listdir(fonts_dir) if f.endswith(".zip")]
+    
+    # Fortschrittsanzeige für das Extrahieren und Kopieren
+    pbar_extract = tqdm(font_zip_files, desc="Extracting fonts", unit="font", dynamic_ncols=True)
 
-            # Entpacke die ZIP-Datei
-            with zipfile.ZipFile(font_zip_path, "r") as zip_ref:
-                zip_ref.extractall(font_extracted_path)
-                print(f"Extracted {font_zip} to {font_extracted_path}")
+    for font_zip in pbar_extract:
+        font_name = font_zip.split(".zip")[0]
+        font_zip_path = os.path.join(fonts_dir, font_zip)
+        font_extracted_path = os.path.join(fonts_dir, font_name)
 
-            # Verschiebe die TTF-Dateien ins Verzeichnis der obersten Ebene
-            move_ttf_files_to_top_level(font_extracted_path)
+        # Entpacke die ZIP-Datei
+        with zipfile.ZipFile(font_zip_path, "r") as zip_ref:
+            zip_ref.extractall(font_extracted_path)
 
-            # Kopiere alle TTF-Dateien in den zentralen Ordner
-            copy_ttf_files_to_all_fonts(font_extracted_path, all_fonts_dir)
+        # Verschiebe die TTF-Dateien ins Verzeichnis der obersten Ebene
+        move_ttf_files_to_top_level(font_extracted_path)
 
-            # Lösche die ursprüngliche ZIP-Datei
-            os.remove(font_zip_path)
-            print(f"Deleted original ZIP file: {font_zip}")
+        # Kopiere alle TTF-Dateien in den zentralen Ordner
+        copy_ttf_files_to_all_fonts(font_extracted_path, all_fonts_dir)
+
+        # Lösche die ursprüngliche ZIP-Datei
+        os.remove(font_zip_path)
+
+    pbar_extract.close()
 
 def move_ttf_files_to_top_level(directory):
     ttf_files = []
@@ -148,7 +154,6 @@ def move_ttf_files_to_top_level(directory):
         # Verschiebe die Datei nur, wenn sie noch nicht auf der obersten Ebene existiert
         if not os.path.exists(top_level_path):
             shutil.move(ttf_file, top_level_path)
-            print(f"Moved TTF file {file_name} to {top_level_path}")
 
     # Lösche alle anderen Dateien und Ordner
     for root, dirs, files in os.walk(directory, topdown=False):
@@ -156,11 +161,9 @@ def move_ttf_files_to_top_level(directory):
             file_path = os.path.join(root, name)
             if not file_path.endswith(".ttf"):
                 os.remove(file_path)
-                print(f"Deleted file: {file_path}")
         for name in dirs:
             dir_path = os.path.join(root, name)
             shutil.rmtree(dir_path)
-            print(f"Deleted directory: {dir_path}")
 
 def copy_ttf_files_to_all_fonts(source_dir, target_dir):
     """
@@ -178,7 +181,6 @@ def copy_ttf_files_to_all_fonts(source_dir, target_dir):
                 # Kopiere die Datei nur, wenn sie nicht bereits im Zielverzeichnis existiert
                 if not os.path.exists(destination_path):
                     shutil.copy2(source_path, destination_path)
-                    print(f"Copied TTF file {file} to {destination_path}")
 
 if __name__ == "__main__":
     # Benutzereingabe für die Anzahl der zu ladenden Schriftarten
