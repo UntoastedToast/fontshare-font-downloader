@@ -2,7 +2,7 @@
 
 ## Overview
 
-Fontshare Font Downloader is a script designed to automate the process of downloading fonts from the [Fontshare website](https://www.fontshare.com/). It uses the Playwright library to interact with the website, collect all available font links, and download them to your local machine. The script can run in a headless browser mode, making it efficient for automated workflows.
+**Fontshare Font Downloader** is a script designed to automate the process of downloading fonts from the [Fontshare website](https://www.fontshare.com/). It uses the Playwright library to interact with the website, collect all available font links, and download them to your local machine. The script supports running in headless mode, making it efficient for automated workflows.
 
 ## Features
 
@@ -13,57 +13,90 @@ Fontshare Font Downloader is a script designed to automate the process of downlo
 
 ## Installation
 
-1. **Clone the repository**:
+### Step-by-Step Setup Guide
+
+1. **Clone the Repository**:
   
-  ```bash
-  git clone https://github.com/UntoastedToast/fontshare-font-downloader.git
-  cd fontshare-font-downloader
-  ```
+  bash
   
-2. **Activate the Virtual Environment**:
+  Code kopieren
   
-  The project comes with a pre-configured virtual environment. Activate it using the following commands based on your operating system:
+  `git clone https://github.com/UntoastedToast/fontshare-font-downloader.git cd fontshare-font-downloader`
   
-  ### Windows
+2. **Create a Virtual Environment**:
   
-  ```bash
-  .\env\Scripts\activate
-  ```
+  Create a virtual environment to install all necessary packages in isolation.
   
-  ### macOS/Linux
+  bash
   
-  ```bash
-  source env/bin/activate
-  ```
+  Code kopieren
   
-3. **Install Playwright Browsers**:
+  `python -m venv env`
   
-  After activating the environment, install the necessary browsers for Playwright if they aren't already installed:
+3. **Activate the Virtual Environment**:
   
-  ```bash
-  playwright install
-  ```
+  Activate the virtual environment using the following command based on your operating system:
+  
+  #### Windows
+  
+  bash
+  
+  Code kopieren
+  
+  `.\env\Scripts\activate`
+  
+  #### macOS/Linux
+  
+  bash
+  
+  Code kopieren
+  
+  `source env/bin/activate`
+  
+4. **Install Dependencies**:
+  
+  Install all required packages from the `requirements.txt` file:
+  
+  bash
+  
+  Code kopieren
+  
+  `pip install -r requirements.txt`
+  
+5. **Install Playwright Browsers**:
+  
+  After activating the virtual environment and installing the dependencies, install the necessary browsers for Playwright:
+  
+  bash
+  
+  Code kopieren
+  
+  `playwright install`
   
 
 ## Usage
 
 Run the script using Python:
 
-```bash
-python fontshare_downloader.py
-```
+bash
+
+Code kopieren
+
+`python fontshare_downloader.py`
 
 By default, it will download all available fonts. You can specify the maximum number of fonts to download:
 
-```bash
-python fontshare_downloader.py --max-fonts 50
-```
+bash
+
+Code kopieren
+
+`python fontshare_downloader.py --max-fonts 50`
 
 This command will limit the download to 50 fonts, but you can adjust this number as needed.
 
 ## Dependencies
 
-The following dependencies are included in the virtual environment:
+The following dependencies are listed in the `requirements.txt` file:
 
 - **pydantic**: Data validation and settings management using Python type annotations.
 - **pandas**: Data manipulation and analysis library.
@@ -72,45 +105,6 @@ The following dependencies are included in the virtual environment:
 
 ## Additional Notes
 
-- **Ensure the Virtual Environment is Complete**: If you encounter any issues with the virtual environment, you may need to recreate it using the following steps:
-  
-  ```bash
-  python -m venv env
-  source env/bin/activate  # For Windows: .\env\Scripts\activate
-  pip install -r requirements.txt
-  ```
+- **Ensure the Virtual Environment is Set Up Correctly**: If you encounter any issues with the virtual environment, ensure you have followed the above steps correctly.
   
 - **Playwright Browser Installation**: Ensure that you run the `playwright install` command after activating the virtual environment to install the necessary browser binaries.
-  
-
----
-
-### Instructions for Recreating the Virtual Environment
-
-If you want users to set up the environment from scratch instead of using the pre-configured one, you can add the following section to guide them:
-
-### Setup from Scratch
-
-1. **Create a Virtual Environment**:
-  
-  ```bash
-  python -m venv env
-  ```
-  
-2. **Activate the Virtual Environment**:
-  
-  ```bash
-  source env/bin/activate  # For Windows: .\env\Scripts\activate
-  ```
-  
-3. **Install Dependencies**:
-  
-  ```bash
-  pip install -r requirements.txt
-  ```
-  
-4. **Install Playwright Browsers**:
-  
-  ```bash
-  playwright install
-  ```
