@@ -17,21 +17,18 @@
 
 1. **Clone the Repository**:
   
-  bash
-  
-  Code kopieren
-  
-  `git clone https://github.com/UntoastedToast/fontshare-font-downloader.git cd fontshare-font-downloader`
+  ```bash
+  git clone https://github.com/UntoastedToast/fontshare-font-downloader.git
+  cd fontshare-font-downloader
+  ```
   
 2. **Create a Virtual Environment**:
   
   Create a virtual environment to install all necessary packages in isolation.
   
-  bash
-  
-  Code kopieren
-  
-  `python -m venv env`
+  ```bash
+  python -m venv env
+  ```
   
 3. **Activate the Virtual Environment**:
   
@@ -39,58 +36,46 @@
   
   #### Windows
   
-  bash
-  
-  Code kopieren
-  
-  `.\env\Scripts\activate`
+  ```bash
+  .\env\Scripts\activate
+  ```
   
   #### macOS/Linux
   
-  bash
-  
-  Code kopieren
-  
-  `source env/bin/activate`
+  ```bash
+  source env/bin/activate
+  ```
   
 4. **Install Dependencies**:
   
   Install all required packages from the `requirements.txt` file:
   
-  bash
-  
-  Code kopieren
-  
-  `pip install -r requirements.txt`
+  ```bash
+  pip install -r requirements.txt
+  ```
   
 5. **Install Playwright Browsers**:
   
   After activating the virtual environment and installing the dependencies, install the necessary browsers for Playwright:
   
-  bash
-  
-  Code kopieren
-  
-  `playwright install`
+  ```bash
+  playwright install
+  ```
   
 
 ## Usage
 
 Run the script using Python:
 
-bash
-
-Code kopieren
-
-`python fontshare_downloader.py`
+```bash
+python fontshare_downloader.py
+```
 
 By default, it will download all available fonts. You can specify the maximum number of fonts to download:
 
-bash
-
-Code kopieren
-
-`python fontshare_downloader.py --max-fonts 50`
+```bash
+python fontshare_downloader.py --max-fonts 50
+```
 
 This command will limit the download to 50 fonts, but you can adjust this number as needed.
 
